@@ -198,7 +198,7 @@
     "java": {
         "default": "8",
         "versions": [
-            "7", "8", "11", "12", "13", "14"
+            "8", "11", "12", "13", "14"
         ]
     },
     "android": {
@@ -211,18 +211,24 @@
             "addon-google_apis-google-24", "addon-google_apis-google-23", "addon-google_apis-google-22", "addon-google_apis-google-21"
         ],
         "additional-tools": [
-            "cmdline-tools;latest"
-        ]
+            "cmake;3.10.2.4988404",
+            "cmake;3.18.1"
+        ],
+        "ndk": {
+            "lts": "21",
+            "latest": "22"
+        }
     },
     "powershellModules": [
         {
             "name": "Az",
             "versions": [
-                "4.8.0"
+                "6.1.0"
             ]
         },
         {"name": "MarkdownPS"},
-        {"name": "Pester"}
+        {"name": "Pester"},
+        {"name": "PSScriptAnalyzer"}
     ],
     "brew": {
         "common_packages": [
@@ -236,7 +242,7 @@
             "gh",
             "gnupg",
             "gnu-tar",
-            "go",
+            "go@1.15",
             "helm",
             "libpq",
             "llvm",
@@ -245,6 +251,8 @@
             "parallel",
             "perl",
             "subversion",
+            "swiftformat",
+            "swig",
             "xctool",
             "zstd"
         ],
@@ -253,6 +261,13 @@
             "r",
             "vagrant",
             "virtualbox"
+        ]
+    },
+    "gcc": {
+        "versions": [
+            "9",
+            "10",
+            "11"
         ]
     },
     "toolcache": [
@@ -298,7 +313,8 @@
             "versions": [
                 "1.13.*",
                 "1.14.*",
-                "1.15.*"
+                "1.15.*",
+                "1.16.*"
             ]
         },
         {
@@ -323,5 +339,13 @@
         "versions": [
             "2.1"
         ]
-    }
+    },
+    "rubygems": [
+        "xcode-install",
+        "cocoapods",
+        "nomad-cli",
+        "xcpretty",
+        "bundler",
+        "fastlane"
+    ]
 }

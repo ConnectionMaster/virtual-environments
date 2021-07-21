@@ -7,6 +7,7 @@ Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Databases.psm1") -Disable
 Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Helpers.psm1") -DisableNameChecking
 Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Tools.psm1") -DisableNameChecking
 Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Java.psm1") -DisableNameChecking
+Import-Module (Join-Path $PSScriptRoot "SoftwareReport.WebServers.psm1") -DisableNameChecking
 Import-Module (Join-Path $PSScriptRoot "SoftwareReport.VisualStudio.psm1") -DisableNameChecking
 
 $markdown = ""
@@ -17,7 +18,7 @@ $markdown += New-MDHeader "$OSName" -Level 1
 $OSVersion = Get-OSVersion
 $markdown += New-MDList -Style Unordered -Lines @(
     "$OSVersion"
-    "Image Version: $env:ImageVersion"
+    "Image Version: $env:IMAGE_VERSION"
 )
 
 if (Test-IsWin19)
@@ -57,6 +58,9 @@ $markdown += New-MDList -Style Unordered -Lines (@(
     (Get-YarnVersion)
     ) | Sort-Object
 )
+$markdown += New-MDHeader "Environment variables" -Level 4
+$markdown += Build-PackageManagementEnvironmentTable | New-MDTable
+$markdown += New-MDNewLine
 
 $markdown += New-MDHeader "Project Management" -Level 3
 $markdown += New-MDList -Style Unordered -Lines (@(
@@ -73,6 +77,7 @@ $markdown += New-MDList -Style Unordered -Lines (@(
     (Get-AzCopyVersion),
     (Get-BazelVersion),
     (Get-BazeliskVersion),
+    (Get-BicepVersion),
     (Get-CabalVersion),
     (Get-CMakeVersion),
     (Get-CodeQLBundleVersion),
@@ -97,6 +102,7 @@ $markdown += New-MDList -Style Unordered -Lines (@(
     (Get-StackVersion),
     (Get-SVNVersion),
     (Get-VSWhereVersion),
+    (Get-SwigVersion),
     (Get-WinAppDriver),
     (Get-ZstdVersion),
     (Get-YAMLLintVersion)
@@ -110,7 +116,6 @@ $markdown += New-MDList -Style Unordered -Lines (@(
     (Get-AWSSAMVersion),
     (Get-AWSSessionManagerVersion),
     (Get-AzureCLIVersion),
-    (Get-AZDSVersion),
     (Get-AzureDevopsExtVersion),
     (Get-CloudFoundryVersion),
     (Get-GHVersion),
@@ -148,6 +153,10 @@ $markdown += New-MDList -Style Unordered -Lines @(
     (Get-SeleniumWebDriverVersion -Driver "firefox"),
     (Get-SeleniumWebDriverVersion -Driver "iexplorer")
 )
+
+$markdown += New-MDHeader "Environment variables" -Level 4
+$markdown += Build-BrowserWebdriversEnvironmentTable | New-MDTable
+$markdown += New-MDNewLine
 
 $markdown += New-MDHeader "Java" -Level 3
 $markdown += Get-JavaVersions | New-MDTable
@@ -194,6 +203,8 @@ $markdown += New-MDList -Style Unordered -Lines (@(
     ) | Sort-Object
 )
 $markdown += New-MDNewLine
+
+$markdown += Build-WebServersSection
 
 $vs = Get-VisualStudioVersion
 $markdown += New-MDHeader "$($vs.Name)" -Level 3
@@ -255,6 +266,9 @@ $markdown += New-MDNewLine
 # Android section
 $markdown += New-MDHeader "Android" -Level 3
 $markdown += Build-AndroidTable | New-MDTable
+$markdown += New-MDNewLine
+$markdown += New-MDHeader "Environment variables" -Level 4
+$markdown += Build-AndroidEnvironmentTable | New-MDTable
 $markdown += New-MDNewLine
 
 # Docker images section

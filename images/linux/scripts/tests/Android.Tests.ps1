@@ -2,26 +2,36 @@ Describe "Android" {
     $androidSdkManagerPackages = Get-AndroidPackages
     [int]$platformMinVersion = Get-ToolsetValue "android.platform_min_version"
     [version]$buildToolsMinVersion = Get-ToolsetValue "android.build_tools_min_version"
+    [string]$ndkLTSVersion = Get-ToolsetValue "android.ndk.lts"
+    $ndkLTSFullVersion = (Get-ChildItem "/usr/local/lib/android/sdk/ndk/$ndkLTSVersion.*" | Select-Object -Last 1).Name
 
-    $platforms = (($androidSdkManagerPackages | Where-Object { "$_".StartsWith("platforms;") }) -replace 'platforms;', '' |
-    Where-Object { [int]$_.Split("-")[1] -ge $platformMinVersion } | Sort-Object { [int]$_.Split("-")[1] } -Unique |
-    ForEach-Object { "platforms/${_}" })
+    $platformVersionsList = ($androidSdkManagerPackages | Where-Object { "$_".StartsWith("platforms;") }) -replace 'platforms;android-', ''
+    $platformNumericList = $platformVersionsList | Where-Object { $_ -match "\d+" } | Where-Object { [int]$_ -ge $platformMinVersion } | Sort-Object -Unique
+    $platformLetterList = $platformVersionsList | Where-Object { $_ -match "\D+" } | Sort-Object -Unique
+    $platforms = $platformNumericList + $platformLetterList | ForEach-Object { "platforms/android-${_}" }
 
-    $buildTools = (($androidSdkManagerPackages | Where-Object { "$_".StartsWith("build-tools;") }) -replace 'build-tools;', '' |
-    Where-Object { [version]$_ -ge $buildToolsMinVersion } | Sort-Object { [version]$_ } -Unique |
-    ForEach-Object { "build-tools/${_}" })
+    $buildToolsList = ($androidSdkManagerPackages | Where-Object { "$_".StartsWith("build-tools;") }) -replace 'build-tools;', ''
+    $buildTools = $buildToolsList | Where-Object { $_ -match "\d+(\.\d+){2,}$"} | Where-Object { [version]$_ -ge $buildToolsMinVersion } | Sort-Object -Unique |
+    ForEach-Object { "build-tools/${_}" }
 
     $androidPackages = @(
         $platforms,
         $buildTools,
         (Get-ToolsetValue "android.extra_list" | ForEach-Object { "extras/${_}" }),
         (Get-ToolsetValue "android.addon_list" | ForEach-Object { "add-ons/${_}" }),
-        (Get-ToolsetValue "android.additional_tools" | ForEach-Object { "${_}" })
-    ) | ForEach-Object { $_ }
+        (Get-ToolsetValue "android.additional_tools" | ForEach-Object { "${_}" }),
+        "ndk/$ndkLTSFullVersion"
+    )
+
+    [string]$ndkLatestVersion = Get-ToolsetValue "android.ndk.latest"
+    if ($ndkLatestVersion) {
+        $ndkLatestFullVersion = (Get-ChildItem "/usr/local/lib/android/sdk/ndk/$ndkLatestVersion.*" | Select-Object -Last 1).Name
+        $androidPackages += @("ndk/$ndkLatestFullVersion")
+    }
+
+    $androidPackages = $androidPackages | ForEach-Object { $_ }
 
     BeforeAll {
-        $ANDROID_SDK_DIR = "/usr/local/lib/android/sdk"
-
         function Validate-AndroidPackage {
             param (
                 [Parameter(Mandatory=$true)]
@@ -33,11 +43,27 @@ Describe "Android" {
             #         'cmake;3.6.4111459' -> 'cmake/3.6.4111459'
             #         'patcher;v4' -> 'patcher/v4'
             $PackageName = $PackageName.Replace(";", "/")
-            $targetPath = Join-Path $ANDROID_SDK_DIR $PackageName
+            $targetPath = Join-Path $env:ANDROID_HOME $PackageName
             $targetPath | Should -Exist
         }
     }
 
+    Context "SDKManagers" {
+        $testCases = @(
+            @{
+                PackageName = "SDK tools"
+                Sdkmanager = "$env:ANDROID_HOME/tools/bin/sdkmanager"
+            },
+            @{
+                PackageName = "Command-line tools"
+                Sdkmanager = "$env:ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+            }
+        )
+
+        It "Sdkmanager from <PackageName> is available" -TestCases $testCases {
+            "$Sdkmanager --version" | Should -ReturnZeroExitCode
+        }
+    }
 
     Context "Packages" {
         $testCases = $androidPackages | ForEach-Object { @{ PackageName = $_ } }

@@ -36,7 +36,7 @@ function Invoke-PesterTests {
     $ErrorActionPreference = $backupErrorActionPreference
 
     # Fail in case if no tests are run
-    if (-not ($results -and ($results.FailedCount -eq 0) -and ($results.PassedCount -gt 0))) {
+    if (-not ($results -and ($results.FailedCount -eq 0) -and (($results.PassedCount + $results.SkippedCount) -gt 0))) {
         $results
         throw "Test run has failed"
     }
@@ -65,10 +65,6 @@ function ShouldReturnZeroExitCode {
         Succeeded      = $succeeded
         FailureMessage = $failureMessage
     }
-}
-
-If (Get-Command -Name Add-AssertionOperator -ErrorAction SilentlyContinue) {
-    Add-AssertionOperator -Name ReturnZeroExitCode -InternalName ShouldReturnZeroExitCode -Test ${function:ShouldReturnZeroExitCode}
 }
 
 function ShouldMatchCommandOutput {
@@ -102,7 +98,7 @@ function ShouldMatchCommandOutput {
     }
 }
 
-If (Get-Command -Name Add-AssertionOperator -ErrorAction SilentlyContinue) {
-    Add-AssertionOperator -Name ReturnZeroExitCode -InternalName ShouldReturnZeroExitCode -Test ${function:ShouldReturnZeroExitCode}
-    Add-AssertionOperator -Name MatchCommandOutput -InternalName ShouldMatchCommandOutput -Test ${function:ShouldMatchCommandOutput}
+If (Get-Command -Name Add-ShouldOperator -ErrorAction SilentlyContinue) {
+    Add-ShouldOperator -Name ReturnZeroExitCode -InternalName ShouldReturnZeroExitCode -Test ${function:ShouldReturnZeroExitCode}
+    Add-ShouldOperator -Name MatchCommandOutput -InternalName ShouldMatchCommandOutput -Test ${function:ShouldMatchCommandOutput}
 }

@@ -25,9 +25,7 @@ Describe "AWS" {
     It "Session Manager Plugin for the AWS CLI" {
         session-manager-plugin | Out-String | Should -Match "plugin was installed successfully"
     }
-}
 
-Describe "AWS SAM CLI" {
     It "AWS SAM CLI" {
         "sam --version" | Should -ReturnZeroExitCode
     }
@@ -58,15 +56,5 @@ Describe "OC CLI" {
 Describe "Oras CLI" {
     It "Oras CLI" {
         "oras version" | Should -ReturnZeroExitCode
-    }
-}
-
-Describe "Vercel CLI" {
-    It "Vercel CLI" {
-        "vercel --version" | Should -ReturnZeroExitCode
-    }
-
-    It "Validate the symlink link [now]" {
-        "now --version" | Should -ReturnZeroExitCode
     }
 }
